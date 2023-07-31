@@ -1,0 +1,51 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo Chat</title>
+</head>
+<body>
+  <h1>Echo Websocket Chat application</h1>
+  <div id="chat-box"></div>
+  <div>
+    <form id="submit-chat">
+      <input type="text" placeholder="your name here" id="name-input" />
+      <input type="text" placeholder="your message here" id="msg-input" />
+      <button type="submit">send</button>
+    </form>
+  </div>
+</body>
+<script>
+  const socket = new WebSocket("ws://localhost:8000/ws");
+  const MESSAGE_TYPE = "chatMessage"
+
+  socket.onmessage = function(event) {
+    message = JSON.parse(event.data)
+    if(message.type == MESSAGE_TYPE) {
+      appendMessage(message.name, message.message)
+    }
+  };
+
+  document.getElementById("submit-chat").addEventListener("submit", function (e) {
+    e.preventDefault()
+
+    let messageObj = {
+      type: MESSAGE_TYPE,
+      name: document.getElementById("name-input").value,
+      message: document.getElementById("msg-input").value,
+    }
+
+    socket.send(JSON.stringify(messageObj));
+    document.getElementById("msg-input").value = "";
+  })
+
+  function appendMessage(name, message) {
+    let container = document.getElementById("chat-box")
+    container.innerHTML += `
+    <div>
+      <span><b>${name}: </b> ${message}</span>
+    </div>
+    `
+  }
+</script>
+</html>
